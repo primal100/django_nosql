@@ -18,7 +18,7 @@ Individual keys
 - Get json values by key or key path::
 
     from django_postgres_extensions.models.expressions import Key
-    obj = Product.objectsannotate(Key('description', 'Details')).get()
+    obj = Product.objects.annotate(Key('description', 'Details')).get()
     obj = Product.objects.annotate(Key('description', 'Details__Rating')).get()
     obj = Product.objects.annotate(Key('description', 'Tags__1')).get()
 
