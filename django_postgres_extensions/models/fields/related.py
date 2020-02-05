@@ -21,27 +21,27 @@ class ArrayManyToManyField(ArrayField, RelatedField):
 
     rel_class = ArrayManyToManyRel
 
-    def __init__(self, to_model, base_field=None, size=None, related_name=None, symmetrical=None,
+    def __init__(self, to, base_field=None, size=None, related_name=None, symmetrical=None,
                  related_query_name=None, limit_choices_to=None, to_field=None, db_constraint=False, **kwargs):
 
         try:
-            to = to_model._meta.model_name
+            to_str = to._meta.model_name
         except AttributeError:
-            assert isinstance(to_model, six.string_types), (
+            assert isinstance(to, six.string_types), (
                 "%s(%r) is invalid. First parameter to ForeignKey must be "
                 "either a model, a model name, or the string %r" % (
-                    self.__class__.__name__, to_model,
+                    self.__class__.__name__, to,
                     RECURSIVE_RELATIONSHIP_CONSTANT,
                 )
             )
-            to = str(to_model)
+            to_str = str(to)
         else:
             # For backwards compatibility purposes, we need to *try* and set
             # the to_field during FK construction. It won't be guaranteed to
             # be correct until contribute_to_class is called. Refs #12190.
-            to_field = to_field or (to_model._meta.pk and to_model._meta.pk.name)
+            to_field = to_field or (to._meta.pk and to._meta.pk.name)
             if not base_field:
-                field = to_model._meta.get_field(to_field)
+                field = to._meta.get_field(to_field)
                 if not field.is_relation:
                     base_field_type = type(field)
                     internal_type = field.get_internal_type()
@@ -58,10 +58,10 @@ class ArrayManyToManyField(ArrayField, RelatedField):
             base_field = models.IntegerField()
 
         if symmetrical is None:
-            symmetrical = (to == RECURSIVE_RELATIONSHIP_CONSTANT)
+            symmetrical = (to_str == RECURSIVE_RELATIONSHIP_CONSTANT)
 
         kwargs['rel'] = self.rel_class(
-            self, to, to_field,
+            self, to_str, to_field,
             related_name=related_name,
             related_query_name=related_query_name,
             limit_choices_to=limit_choices_to,
@@ -71,10 +71,10 @@ class ArrayManyToManyField(ArrayField, RelatedField):
 
         self.db_constraint = db_constraint
 
-        self.to = to
+        self.to = to_str
 
         if 'default' not in kwargs.keys():
-            kwargs['default'] = []
+            kwargs['default'] = list
         kwargs['blank'] = True
 
         self.from_fields = ['self']
@@ -84,15 +84,15 @@ class ArrayManyToManyField(ArrayField, RelatedField):
 
     def deconstruct(self):
         name, path, args, kwargs = super(ArrayManyToManyField, self).deconstruct()
-        args = (self.to,)
         kwargs.update({
+            'to': self.to,
             'base_field': self.base_field,
             'size': self.size,
             'related_name': self.remote_field.related_name,
             'symmetrical': self.remote_field.symmetrical,
             'related_query_name': self.remote_field.related_query_name,
             'limit_choices_to': self.remote_field.limit_choices_to,
-            'to_field': self.remote_field.field,
+            'to_field': self.remote_field.field_name,
             'db_constraint': self.db_constraint
         })
         return name, path, args, kwargs
