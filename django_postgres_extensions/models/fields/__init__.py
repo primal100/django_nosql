@@ -1,4 +1,4 @@
-from django.contrib.postgres import fields
+from django.contrib.postgres import fields as django_fields
 from django.contrib.postgres.forms import SplitArrayField as SplitArrayFormField
 from django.forms.fields import TypedMultipleChoiceField
 from psycopg2.extras import Json
@@ -9,7 +9,7 @@ from django_postgres_extensions.models.sql.updates import UpdateArrayByIndex
 from django.core import exceptions
 
 
-class ArrayField(fields.ArrayField):
+class ArrayField(django_fields.ArrayField):
 
     def __init__(self, base_field, form_size=None, **kwargs):
         super(ArrayField, self).__init__(base_field, **kwargs)
@@ -38,7 +38,7 @@ class ArrayField(fields.ArrayField):
             if self.choices:
                 defaults['coerce'] = self.base_field.to_python
             defaults.update(kwargs)
-            return super(fields.ArrayField, self).formfield(**defaults)
+            return super(django_fields.ArrayField, self).formfield(**defaults)
         return super(ArrayField, self).formfield(**kwargs)
 
     def validate(self, value, model_instance):
@@ -84,7 +84,7 @@ class ArrayField(fields.ArrayField):
         })
         return name, path, args, kwargs
 
-class HStoreField(fields.HStoreField):
+class HStoreField(django_fields.HStoreField):
 
     def __init__(self, fields=(), keys=(), max_value_length=25, require_all_fields=False, **kwargs):
         super(HStoreField, self).__init__(**kwargs)
@@ -119,7 +119,7 @@ class HStoreField(fields.HStoreField):
             defaults = kwargs
         return super(HStoreField, self).formfield(**defaults)
 
-class JSONField(fields.JSONField):
+class JSONField(django_fields.JSONField):
 
     def __init__(self, fields=(), require_all_fields=False, **kwargs):
         super(JSONField, self).__init__(**kwargs)

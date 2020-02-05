@@ -15,7 +15,7 @@ To use this field, it is required to set ENABLE_ARRAY_M2M = True in settings.py 
 Then in models.py::
 
     from django.db import models
-    from django_postgres_extensions.models.fields import ArrayManyToManyField
+    from django_postgres_extensions.models import ArrayManyToManyField
 
     class Publication(models.Model):
         title = models.CharField(max_length=30)
